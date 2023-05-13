@@ -1,23 +1,41 @@
 import express from "express";
 import { config } from "dotenv";
-import { GetUsersController } from "./controllers/get-users/get-users";
-import { MongoGetUsersRepository } from "./repositories/get-users/mongo-get-users";
+import { GetCoursesController } from "./controllers/get-course/get-courses";
+import { MongoGetCoursesRepository } from "./repositories/get-courses/mongo-get-courses";
 import { MongoClient } from "./database/mongo";
+import { MongoCreateCourseRepository } from "./repositories/create-course/mongo-create-course";
+import { CreateCourseController } from "./controllers/create-course/create-course";
 
 const main = async () => {
   config();
 
   const app = express();
 
-  await MongoClient.connect();
-  app.get("/users", async (req, res) => {
-    const mongoGetUsersRepository = new MongoGetUsersRepository();
-    const getUsersController = new GetUsersController(mongoGetUsersRepository);
+  app.use(express.json());
 
-    const { body, statusCode } = await getUsersController.handle();
+  await MongoClient.connect();
+  app.get("/courses", async (req, res) => {
+    const mongoGetCoursesRepository = new MongoGetCoursesRepository();
+    const getCoursesController = new GetCoursesController(mongoGetCoursesRepository);
+
+    const { body, statusCode } = await getCoursesController.handle();
     res.send(body).status(statusCode);
   });
   const port = process.env.PORT || 8000;
+
+  app.post("/courses", async (req, res) => {
+    const mongoCreateCoursesRepository = new MongoCreateCourseRepository();
+
+    const createCoursesController = new CreateCourseController(
+      mongoCreateCoursesRepository
+    );
+
+    const { body, statusCode } = await createCoursesController.handle({
+      body: req.body,
+    });
+
+    res.status(statusCode).send(body);
+  });
 
   app.listen(port, () => console.log(`listening on port ${port}`));
 };

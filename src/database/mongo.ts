@@ -18,6 +18,6 @@ export const MongoClient = {
 
         console.log("Connected to mongodb!")
 
-        db.collection('users').find()
+        db.collection('courses').find()
     }
 }
